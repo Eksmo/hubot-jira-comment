@@ -18,13 +18,22 @@ module.exports = (robot) ->
     room = req.params.room
     body = req.body
     if body.webhookEvent == 'jira:issue_updated' && body.comment
+      comment = body.comment
       issue = "#{body.issue.key} #{body.issue.fields.summary}"
       url = "#{process.env.HUBOT_JIRA_URL}/browse/#{body.issue.key}"
-      text = "*#{issue}* _(#{url})_\n#{body.comment.author.name}:\n```#{body.comment.body}```"
+      text = body.comment.body
+      attachment =
+         fallback: issue
+         color: "#3572b0"
+         author_name: comment.author.displayName || comment.author.name
+         author_icon: comment.author.avatarUrls["16x16"]
+         title: issue
+         title_link: url
+         text: comment.body
       data =
-           channel: room
-           username: "jira"
-           text: text
-           icon_emoji: ":jira:"
+         channel: room
+         username: "jira"
+         icon_emoji: ":jira:"
+         attachments: [attachment]
       robot.adapter.customMessage data
     res.send 'OK'
